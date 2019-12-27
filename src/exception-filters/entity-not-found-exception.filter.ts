@@ -3,7 +3,7 @@ import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
 import { Response } from 'express';
 
 @Catch(EntityNotFoundError)
-export class EntityNotFoundExceptionFilterFilter<T> implements ExceptionFilter {
+export class EntityNotFoundExceptionFilter<T> implements ExceptionFilter {
   catch(exception: EntityNotFoundError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
