@@ -26,8 +26,8 @@ import { PasswordService } from './password.service';
   ],
   exports: [
     AuthService,
-    PassportModule,
     JwtStrategy,
+    PassportModule,
   ],
   controllers: [AuthController],
 })

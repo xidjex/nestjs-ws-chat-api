@@ -1,11 +1,19 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+// Services
 import { UsersService } from '../users/users.service';
+import { PasswordService } from './password.service';
+
+// Entities
+import { User } from '../users/entities/user.entity';
+
+// Dto
 import { UserLoginDto } from '../users/dto/user.login.dto';
 import { UserRegisterDto } from '../users/dto/user.register.dto';
-import { PasswordService } from './password.service';
-import { User } from '../users/entities/user.entity';
+
+// Interfaces
+import { AccessTokenInterface } from './interfaces/access-token.interface';
 
 @Injectable()
 export class AuthService {
@@ -15,25 +23,17 @@ export class AuthService {
     private readonly passwordService: PasswordService,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.usersService.find(email, pass);
-
-    if (user.password === pass) {
-      const { password, ...result } = user;
-
-      return result;
-    }
-
-    return null;
+  async validateUser(id: number): Promise<any> {
+    return await this.usersService.findById(id);
   }
 
-  async login(userDto: UserLoginDto): Promise<{ accessToken: string }> {
+  async login(userDto: UserLoginDto): Promise<AccessTokenInterface> {
     const { email, password } = userDto;
 
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
-      throw new UnauthorizedException('User with provided email doesn\'t exist');
+      throw new UnauthorizedException('User with provided email doesn\'t exist.');
     }
 
     const isCorrectPassword = await this.passwordService.compare(password, user.password);
@@ -50,14 +50,14 @@ export class AuthService {
   }
 
   async register(userDto: UserRegisterDto): Promise<User> {
-    const { password, ...restData } = userDto;
+    const { email, name, password } = userDto;
+
     const hashedPassword: string = await this.passwordService.hash(password);
 
-    const user = await this.usersService.create({
+    return await this.usersService.create({
+      email,
+      name,
       password: hashedPassword,
-      ...restData,
     });
-
-    return user;
   }
 }

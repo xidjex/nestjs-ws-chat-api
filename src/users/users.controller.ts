@@ -6,7 +6,10 @@ import {
   Param,
 } from '@nestjs/common';
 
+// Services
 import { UsersService } from './users.service';
+
+// Entities
 import { User } from 'src/users/entities/user.entity';
 
 @Controller('users')

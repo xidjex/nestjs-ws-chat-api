@@ -6,7 +6,6 @@ export class AppController {
   @Get('test')
   @UseGuards(AuthGuard())
   test(@Req() request: any) {
-    console.log(request.user);
     return 'Test';
   }
 }

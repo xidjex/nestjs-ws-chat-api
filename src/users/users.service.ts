@@ -3,8 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
 import { User, UserStatus } from './entities/user.entity';
-import { UserRegisterDto } from './dto/user.register.dto';
+
+// Exceptions
 import { UserAlreadyExistException } from './exceptions/user.already-exist.exception';
+
+// Dto
+import { UserRegisterDto } from './dto/user.register.dto';
 
 @Injectable()
 export class UsersService {
@@ -43,7 +47,9 @@ export class UsersService {
 
   async create(user: UserRegisterDto): Promise<User> {
     try {
-      return await this.userRepository.save(user);
+      const { password, ...userData } = await this.userRepository.save(user);
+
+      return userData;
     } catch (exception) {
       if (exception instanceof QueryFailedError) {
         throw new UserAlreadyExistException('User with provided email already exist');
