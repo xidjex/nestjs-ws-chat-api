@@ -1,6 +1,6 @@
 import { UserStatus } from '../../users/entities/user.entity';
 
-export interface TokenPayloadInterface {
+export class TokenPayloadType {
   id: number;
   email: string;
   name: string;

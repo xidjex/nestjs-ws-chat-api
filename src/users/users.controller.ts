@@ -4,6 +4,8 @@ import {
   Body,
   Post,
   Param,
+  ClassSerializerInterceptor,
+  UseInterceptors,
 } from '@nestjs/common';
 
 // Services
@@ -13,6 +15,7 @@ import { UsersService } from './users.service';
 import { User } from 'src/users/entities/user.entity';
 
 @Controller('users')
+@UseInterceptors(ClassSerializerInterceptor)
 export class UsersController {
   constructor(protected usersService: UsersService) {}
 

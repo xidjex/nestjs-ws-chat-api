@@ -21,12 +21,6 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  find(email: string, password: string): Promise<User> {
-    return this.userRepository.findOne({
-      where: { email, password },
-    });
-  }
-
   findByEmail(email: string): Promise<User> {
     return this.userRepository.findOne({
       where: { email },
@@ -47,9 +41,13 @@ export class UsersService {
 
   async create(user: UserRegisterDto): Promise<User> {
     try {
-      const { password, ...userData } = await this.userRepository.save(user);
+      const newUser: User = await this.userRepository.save(user);
 
-      return userData;
+      const dat = await this.findById(newUser.id);
+
+      console.log(dat instanceof User);
+
+      return dat;
     } catch (exception) {
       if (exception instanceof QueryFailedError) {
         throw new UserAlreadyExistException('User with provided email already exist');

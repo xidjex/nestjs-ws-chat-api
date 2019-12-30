@@ -13,7 +13,8 @@ import { UserLoginDto } from '../users/dto/user.login.dto';
 import { UserRegisterDto } from '../users/dto/user.register.dto';
 
 // Interfaces
-import { AccessTokenInterface } from './interfaces/access-token.interface';
+import { AccessTokenType } from './types/access-token.type';
+import { TokenPayloadType } from './types/token-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -23,11 +24,7 @@ export class AuthService {
     private readonly passwordService: PasswordService,
   ) {}
 
-  async validateUser(id: number): Promise<any> {
-    return await this.usersService.findById(id);
-  }
-
-  async login(userDto: UserLoginDto): Promise<AccessTokenInterface> {
+  async login(userDto: UserLoginDto): Promise<AccessTokenType> {
     const { email, password } = userDto;
 
     const user = await this.usersService.findByEmail(email);
@@ -54,10 +51,25 @@ export class AuthService {
 
     const hashedPassword: string = await this.passwordService.hash(password);
 
-    return await this.usersService.create({
+    return this.usersService.create({
       email,
       name,
       password: hashedPassword,
     });
+  }
+
+  async verifyToken(token: string): Promise<boolean> {
+    const formattedToken = token.replace('Bearer ', '');
+
+    const jwtPayload: TokenPayloadType = await this.jwtService.verifyAsync(formattedToken) as TokenPayloadType;
+    const { id } = jwtPayload;
+
+    return !!id;
+  }
+
+  decodeToken(token: string): TokenPayloadType {
+    const formattedToken = token.replace('Bearer ', '');
+
+    return this.jwtService.decode(formattedToken) as TokenPayloadType;
   }
 }

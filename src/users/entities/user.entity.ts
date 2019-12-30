@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 export enum UserStatus {
   active,
@@ -19,7 +20,8 @@ export class User {
   name: string;
 
   @Column()
-  password?: string;
+  @Exclude()
+  password: string;
 
   @Column({ default: false })
   isAdmin: boolean;
@@ -29,5 +31,6 @@ export class User {
     enum: UserStatus,
     default: UserStatus.active,
   })
+
   status: UserStatus;
 }

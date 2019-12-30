@@ -6,7 +6,7 @@ import { constants } from './constants';
 
 import { User } from '../users/entities/user.entity';
 import { AuthService } from './auth.service';
-import { TokenPayloadInterface } from './interfaces/token-payload.interface';
+import { TokenPayloadType } from './types/token-payload.type';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -18,9 +18,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: TokenPayloadInterface): Promise<User | null> {
+  validate(payload: TokenPayloadType): boolean {
     const { id } = payload;
 
-    return await this.authService.validateUser(id);
+    return !!id;
   }
 }
