@@ -10,7 +10,7 @@ import { TokenPayloadType } from './types/token-payload.type';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(protected readonly authService: AuthService) {
+  constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -19,8 +19,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: TokenPayloadType): boolean {
-    const { id } = payload;
+    const { id, email, name } = payload;
 
-    return !!id;
+    return Boolean(id && email && name);
   }
 }
