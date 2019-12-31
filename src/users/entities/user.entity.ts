@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Unique, BaseEntity } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
 export enum UserStatus {
@@ -9,7 +9,7 @@ export enum UserStatus {
 
 @Entity()
 @Unique(['email', 'name'])
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
