@@ -1,29 +1,31 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 
-// Constants
-import { constants } from './constants';
-
-import { verify } from 'jsonwebtoken';
-import { WsException } from '@nestjs/websockets';
-import { TokenPayloadType } from './types/token-payload.type';
+// Services
 import { AuthService } from './auth.service';
+
+// Entities
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthJwtWsGuard implements CanActivate {
   constructor(private readonly authService: AuthService) {}
 
-  retrieveBearerToken(context: ExecutionContext): string {
+  attachUser(context: ExecutionContext, user: User): void {
     const client = context.switchToWs().getClient();
 
-    return client.handshake.query.token;
+    client.handshake.query.user = user;
   }
-  canActivate(context: ExecutionContext): Promise<boolean> {
-    try {
-      const token: string = this.retrieveBearerToken(context);
 
-      return this.authService.verifyToken(token);
-    } catch (exception) {
-      throw new WsException(`Token invalid: ${exception.message}`);
-    }
+  async canActivate(context: ExecutionContext) {
+    const client = context.switchToWs().getClient();
+    const { token = '' } = client.handshake.query;
+
+    const tokenPayload = await this.authService.verifyToken(token);
+
+    const user = await this.authService.validateUser(tokenPayload.id);
+
+    this.attachUser(context, user);
+
+    return !!tokenPayload;
   }
 }

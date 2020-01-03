@@ -6,15 +6,17 @@ import { UsersService } from '../users/users.service';
 import { PasswordService } from './password.service';
 
 // Entities
-import { User } from '../users/entities/user.entity';
+import { User, UserStatus } from '../users/entities/user.entity';
 
 // Dto
 import { UserLoginDto } from '../users/dto/user.login.dto';
 import { UserRegisterDto } from '../users/dto/user.register.dto';
 
-// Interfaces
+// Types
 import { AccessTokenType } from './types/access-token.type';
 import { TokenPayloadType } from './types/token-payload.type';
+import { InvalidTokenException } from './exceptions/invalid-token.exception';
+import { UserBannedException } from './exceptions/user-banned.exception';
 
 @Injectable()
 export class AuthService {
@@ -58,18 +60,27 @@ export class AuthService {
     });
   }
 
-  async verifyToken(token: string): Promise<boolean> {
-    const formattedToken = token.replace('Bearer ', '');
+  async validateUser(id: number): Promise<User | null> {
+    const user = await this.usersService.findById(id);
 
-    const jwtPayload: TokenPayloadType = await this.jwtService.verifyAsync(formattedToken) as TokenPayloadType;
-    const { id } = jwtPayload;
+    if (user && user.status === UserStatus.banned) {
+      throw new UserBannedException('Forbidden. You banned by admin!');
+    }
 
-    return !!id;
+    return user;
   }
 
-  decodeToken(token: string): TokenPayloadType {
-    const formattedToken = token.replace('Bearer ', '');
+  async verifyToken(token: string): Promise<TokenPayloadType> {
+    if (!token) {
+      throw new InvalidTokenException('Bearer token doesn\'t present');
+    }
 
-    return this.jwtService.decode(formattedToken) as TokenPayloadType;
+    try {
+      const formattedToken = token.replace('Bearer ', '');
+
+      return await this.jwtService.verifyAsync<TokenPayloadType>(formattedToken);
+    } catch (exception) {
+      throw new InvalidTokenException(`Token invalid: ${exception.message}`);
+    }
   }
 }

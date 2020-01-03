@@ -1,5 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, Unique, BaseEntity } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Unique, BaseEntity, ManyToOne, OneToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
+
+// Entities
+import { Message } from '../../messages/entities/message.entity';
 
 export enum UserStatus {
   active,
@@ -13,10 +16,10 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column()
@@ -33,4 +36,7 @@ export class User extends BaseEntity {
   })
 
   status: UserStatus;
+
+  @OneToMany(type => Message, message => message.user)
+  messages: Message[];
 }

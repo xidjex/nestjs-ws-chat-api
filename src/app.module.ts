@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { EventsModule } from './events/events.module';
     TypeOrmModule.forRoot(),
     AuthModule,
     EventsModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

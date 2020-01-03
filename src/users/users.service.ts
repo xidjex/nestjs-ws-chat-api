@@ -44,7 +44,7 @@ export class UsersService {
       return await this.userRepository.create(user).save();
     } catch (exception) {
       if (exception instanceof QueryFailedError) {
-        throw new UserAlreadyExistException('User with provided email already exist');
+        throw new UserAlreadyExistException('User with provided email or name already exist');
       } else {
         throw exception;
       }

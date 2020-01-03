@@ -2,32 +2,44 @@
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
     <script>
+
+        const token = prompt('token', '');
+
       const socket = io('http://localhost:3000', {
         query: {
-          token: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJtYWlsQGdtYWlsLmNvbSIsIm5hbWUiOiJ0ZXN0IHVzZXIiLCJpc0FkbWluIjpmYWxzZSwic3RhdHVzIjowLCJpYXQiOjE1Nzc3MTc5NzIsImV4cCI6MTU3NzcyMTU3Mn0.2AQAWk2DDu2_MZg4j1aFL6WliH43XcNo-NH5ZGwu_Ak'
+          token
         }
       });
       socket.on('connect', function() {
         console.log('Connected');
         socket.emit('events', 'hello');
       });
-      socket.on('events', function(data) {
-        console.log('event', data);
+      socket.on('message', function(data) {
+        console.log('message', data);
       });
-      socket.on('users', function(data) {
+      socket.on('users-online', function(data) {
         console.log('users', data);
       });
       socket.on('exception', function(data) {
-        console.log('event', data);
+        console.log('exception', data);
       });
       socket.on('disconnect', function(data) {
-        console.log('Disconnected', data());
+        console.log('Disconnected', data);
       });
       socket.on('error', (...data) => {
         console.log('error', data);
       })
+
+        const handleClick = () => {
+          const message = prompt('message', '');
+
+          socket.emit('message', message);
+        }
+
     </script>
 </head>
 
-<body></body>
+<body>
+    <button onclick="handleClick()">Send</button>
+</body>
 </html>
