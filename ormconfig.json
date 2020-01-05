@@ -5,6 +5,7 @@
   "username": "default",
   "password": "secret",
   "database": "ws-chat",
+  "logging": true,
   "entities": ["dist/**/*.entity{.ts,.js}"],
   "synchronize": true
 }

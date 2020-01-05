@@ -22,7 +22,7 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   name: string;
 
-  @Column()
+  @Column({ select: false })
   @Exclude()
   password: string;
 
@@ -34,7 +34,6 @@ export class User extends BaseEntity {
     enum: UserStatus,
     default: UserStatus.active,
   })
-
   status: UserStatus;
 
   @OneToMany(type => Message, message => message.user)

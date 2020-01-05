@@ -10,6 +10,7 @@ import { User } from '../users/entities/user.entity';
 export class AuthJwtWsGuard implements CanActivate {
   constructor(private readonly authService: AuthService) {}
 
+  // Attach user data to connection
   attachUser(context: ExecutionContext, user: User): void {
     const client = context.switchToWs().getClient();
 

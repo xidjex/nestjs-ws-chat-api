@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
+// Entities
 import { Message } from './entities/message.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class MessagesService {
@@ -9,4 +12,31 @@ export class MessagesService {
     @InjectRepository(Message)
     private readonly messagesRepository: Repository<Message>,
   ) {}
+
+  async getList(limit: number = 10): Promise<Message[]> {
+    const messages = await this.messagesRepository.find({
+      take: limit,
+      order: { date: 'DESC' },
+      join: {
+        alias: 'message',
+        leftJoinAndSelect: {
+          user: 'message.user',
+        },
+      },
+    });
+
+    return messages.sort(({ date: d1 }, { date: d2 }) => {
+      return +new Date(d1) - +new Date(d2);
+    });
+  }
+
+  create(message: string, user: User): Promise<Message> {
+    const newMessage = this.messagesRepository.create();
+
+    newMessage.text = message;
+    newMessage.date = new Date().toLocaleString();
+    newMessage.user = user;
+
+    return newMessage.save();
+  }
 }

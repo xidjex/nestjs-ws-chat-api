@@ -3,28 +3,28 @@ import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class UsersOnlineService {
-  private users: Map<number, User> = new Map();
+  private users: Map<string, User> = new Map();
 
-  add(user: User): UsersOnlineService {
-    this.users.set(user.id, user);
-
-    return this;
-  }
-
-  delete(id: number): UsersOnlineService {
-    this.users.delete(id);
+  add(socketId: string, user: User): UsersOnlineService {
+    this.users.set(socketId, user);
 
     return this;
   }
 
-  update(user: User): UsersOnlineService {
-    this.users.set(user.id, user);
+  delete(socketId: string): UsersOnlineService {
+    this.users.delete(socketId);
 
     return this;
   }
 
-  get(id: number): User | undefined {
-    return this.users.get(id);
+  update(socketId: string, user: User): UsersOnlineService {
+    this.users.set(socketId, user);
+
+    return this;
+  }
+
+  get(socketId: string): User | undefined {
+    return this.users.get(socketId);
   }
 
   toArray(): User[] {

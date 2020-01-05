@@ -51,7 +51,7 @@ export class AuthService {
   async register(userDto: UserRegisterDto): Promise<User> {
     const { email, name, password } = userDto;
 
-    const hashedPassword: string = await this.passwordService.hash(password);
+    const hashedPassword = await this.passwordService.hash(password);
 
     return this.usersService.create({
       email,
@@ -78,7 +78,7 @@ export class AuthService {
     try {
       const formattedToken = token.replace('Bearer ', '');
 
-      return await this.jwtService.verifyAsync<TokenPayloadType>(formattedToken);
+      return this.jwtService.verifyAsync<TokenPayloadType>(formattedToken);
     } catch (exception) {
       throw new InvalidTokenException(`Token invalid: ${exception.message}`);
     }

@@ -24,6 +24,14 @@ export class UsersService {
   findByEmail(email: string): Promise<User> {
     return this.userRepository.findOne({
       where: { email },
+      select: [
+        'id',
+        'email',
+        'name',
+        'password',
+        'isAdmin',
+        'status',
+      ],
     });
   }
 
@@ -39,9 +47,9 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async create(user: UserRegisterDto): Promise<User> {
+  create(user: UserRegisterDto): Promise<User> {
     try {
-      return await this.userRepository.create(user).save();
+      return this.userRepository.create(user).save();
     } catch (exception) {
       if (exception instanceof QueryFailedError) {
         throw new UserAlreadyExistException('User with provided email or name already exist');

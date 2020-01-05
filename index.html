@@ -14,8 +14,8 @@
         console.log('Connected');
         socket.emit('events', 'hello');
       });
-      socket.on('message', function(data) {
-        console.log('message', data);
+      socket.on('messages', function(data) {
+        console.log('messages', data);
       });
       socket.on('users-online', function(data) {
         console.log('users', data);
@@ -33,7 +33,7 @@
         const handleClick = () => {
           const message = prompt('message', '');
 
-          socket.emit('message', message);
+          socket.emit('messages', message);
         }
 
     </script>

@@ -1,7 +1,10 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { UserStatus } from '../users/entities/user.entity';
 import { WsException } from '@nestjs/websockets';
 
+// Entities
+import { UserStatus } from '../users/entities/user.entity';
+
+// Exceptions
 import { UserMutedException } from './exceptions/user-muted.exception';
 import { UserBannedException } from './exceptions/user-banned.exception';
 
@@ -9,9 +12,7 @@ import { UserBannedException } from './exceptions/user-banned.exception';
 export class MessagesGuard implements CanActivate {
   constructor(readonly statuses: UserStatus[] = [UserStatus.muted, UserStatus.banned]) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean {
+  canActivate(context: ExecutionContext): boolean {
     const client = context.switchToWs().getClient();
 
     const user = client.handshake.query.user;

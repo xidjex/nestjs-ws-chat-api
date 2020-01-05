@@ -17,10 +17,14 @@ import { MessagesGuard } from '../auth/messages.guard';
 // Services
 import { AuthService } from '../auth/auth.service';
 import { UsersService } from '../users/users.service';
+import { MessagesService } from 'src/messages/messages.service';
 
 // Exceptions
 import { UsersOnlineService } from './users-online.service';
 import { AllWsExceptionsFilter } from './all-ws.exception.filter';
+
+// Entities
+import { User } from '../users/entities/user.entity';
 
 @WebSocketGateway()
 @UseFilters(AllWsExceptionsFilter)
@@ -29,6 +33,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly authService: AuthService,
     private readonly userService: UsersService,
     private readonly usersOnlineService: UsersOnlineService,
+    private readonly messagesService: MessagesService,
   ) {}
 
   @WebSocketServer()
@@ -36,16 +41,18 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(socket: Socket): Promise<void> {
     try {
-      const { token } = socket.handshake.query;
+      const user = await this.authUser(socket);
+      const messages = await this.messagesService.getList();
 
-      const tokenPayload = await this.authService.verifyToken(token);
+      this.usersOnlineService.add(socket.id, user);
 
-      const user = await this.authService.validateUser(tokenPayload.id);
+      this.server.emit('users-online', this.usersOnlineService.toArray());
+      socket.emit('messages', messages);
 
-      if (user) {
-        this.usersOnlineService.add(user);
+      if (user.isAdmin) {
+        const users = await this.userService.findAll();
 
-        this.server.emit('users-online', this.usersOnlineService.toArray());
+        socket.emit('users-list', users);
       }
     } catch (exception) {
       socket.emit('exception', {
@@ -55,20 +62,30 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  @UseGuards(AuthJwtWsGuard)
   handleDisconnect(socket: Socket) {
-    const user = socket.handshake.query.user;
+    this.usersOnlineService.delete(socket.id);
 
-    if (user) {
-      this.usersOnlineService.delete(user.id);
-
-      socket.emit('users-online', this.usersOnlineService.toArray());
-    }
+    socket.emit('users-online', this.usersOnlineService.toArray());
   }
 
   @UseGuards(AuthJwtWsGuard, new MessagesGuard())
-  @SubscribeMessage('message')
-  handleEvent(@MessageBody() data: unknown, @ConnectedSocket() socket: Socket): void {
-    socket.broadcast.emit('message', data);
+  @SubscribeMessage('messages')
+  async handleEvent(
+    @MessageBody() data: unknown,
+    @ConnectedSocket() socket: Socket,
+  ): Promise<void> {
+    const{ user } = socket.handshake.query;
+
+    const message = await this.messagesService.create(data as string, user);
+
+    socket.broadcast.emit('messages', [message]);
+  }
+
+  async authUser(socket: Socket): Promise<User> {
+    const { token } = socket.handshake.query;
+
+    const tokenPayload = await this.authService.verifyToken(token);
+
+    return this.authService.validateUser(tokenPayload.id);
   }
 }
