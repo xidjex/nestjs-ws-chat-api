@@ -20,6 +20,9 @@
       socket.on('users-online', function(data) {
         console.log('users', data);
       });
+      socket.on('users-list', function(data) {
+        console.log('all-users', data);
+      });
       socket.on('exception', function(data) {
         console.log('exception', data);
       });
@@ -28,7 +31,7 @@
       });
       socket.on('error', (...data) => {
         console.log('error', data);
-      })
+      });
 
         const handleClick = () => {
           const message = prompt('message', '');
@@ -36,10 +39,18 @@
           socket.emit('messages', message);
         }
 
+        const handleBan = () => {
+          const id = Number(prompt('id', ''));
+          const status = Number(prompt('status', ''));
+
+            socket.emit('user-status-change', { id, status });
+        }
+
     </script>
 </head>
 
 <body>
     <button onclick="handleClick()">Send</button>
+    <button onclick="handleBan()">Ban</button>
 </body>
 </html>
