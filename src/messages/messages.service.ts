@@ -31,12 +31,10 @@ export class MessagesService {
   }
 
   create(message: string, user: User): Promise<Message> {
-    const newMessage = this.messagesRepository.create();
-
-    newMessage.text = message;
-    newMessage.date = new Date().toLocaleString();
-    newMessage.user = user;
-
-    return newMessage.save();
+    return this.messagesRepository.create({
+        text: message,
+        date: new Date().toLocaleString(),
+        user,
+    }).save();
   }
 }

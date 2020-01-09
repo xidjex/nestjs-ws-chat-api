@@ -2,11 +2,11 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 
 // Entities
-import { UserStatus } from '../users/entities/user.entity';
+import { UserStatus } from '../../users/entities/user.entity';
 
 // Exceptions
-import { UserMutedException } from './exceptions/user-muted.exception';
-import { UserBannedException } from './exceptions/user-banned.exception';
+import { UserMutedException } from '../../auth/exceptions/user-muted.exception';
+import { UserBannedException } from '../../auth/exceptions/user-banned.exception';
 
 @Injectable()
 export class MessagesGuard implements CanActivate {
