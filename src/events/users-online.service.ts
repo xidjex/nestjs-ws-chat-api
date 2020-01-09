@@ -1,33 +1,51 @@
 import { Injectable } from '@nestjs/common';
+import { Socket } from 'socket.io';
+
+// Entity
 import { User } from '../users/entities/user.entity';
+
+// Types
+import { UserOnline } from './types/user-online.type';
 
 @Injectable()
 export class UsersOnlineService {
-  private users: Map<string, User> = new Map();
+  private users: UserOnline[] = [];
 
-  add(socketId: string, user: User): UsersOnlineService {
-    this.users.set(socketId, user);
-
-    return this;
-  }
-
-  delete(socketId: string): UsersOnlineService {
-    this.users.delete(socketId);
+  add(user: User, socket: Socket): UsersOnlineService {
+    this.users.push({ socket, user });
 
     return this;
   }
 
-  update(socketId: string, user: User): UsersOnlineService {
-    this.users.set(socketId, user);
+  delete(target: User | Socket): UsersOnlineService {
+    const key = target instanceof User ? 'user' : 'socket';
+
+    this.users.filter(({ [key]: { id } }) => id !== target.id);
 
     return this;
   }
 
-  get(socketId: string): User | undefined {
-    return this.users.get(socketId);
+  update(user: User, socket?: Socket): UsersOnlineService {
+    this.users = this.users.map((userOnline) => {
+      if (userOnline.user.id === user.id) {
+        return {
+          ...userOnline,
+          user,
+          ...(socket ? { socket } : {}),
+        };
+      }
+
+      return userOnline;
+    });
+
+    return this;
+  }
+
+  get(userId: number): UserOnline | undefined {
+    return this.users.find(({ user: { id } }) => id === userId);
   }
 
   toArray(): User[] {
-    return Array.from(this.users.values());
+    return this.users.map(({ user }) => user);
   }
 }
