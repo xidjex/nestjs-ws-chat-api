@@ -20,6 +20,6 @@ export class Message extends BaseEntity {
   @Column({ type: 'datetime' })
   date: string;
 
-  @ManyToOne(type => User, user => user.messages)
+  @ManyToOne(() => User, user => user.messages)
   user: User;
 }

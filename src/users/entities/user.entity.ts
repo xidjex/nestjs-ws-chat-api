@@ -36,6 +36,6 @@ export class User extends BaseEntity {
   })
   status: UserStatus;
 
-  @OneToMany(type => Message, message => message.user)
+  @OneToMany(() => Message, message => message.user)
   messages: Message[];
 }
