@@ -1,32 +1,41 @@
 import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  OnGatewayConnection,
-  SubscribeMessage,
-  OnGatewayDisconnect,
-  MessageBody,
-  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseGuards, UseFilters } from '@nestjs/common';
-
+import { UseFilters, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 // Guards
 import { AuthJwtWsGuard } from 'src/auth/auth.jwt-ws.guard';
-import { MessagesGuard } from '../auth/messages.guard';
-
+import { MessagesGuard } from './guards/messages.guard';
+import { AdminGuard } from './guards/admin.guard';
 // Services
 import { AuthService } from '../auth/auth.service';
 import { UsersService } from '../users/users.service';
 import { MessagesService } from 'src/messages/messages.service';
-
 // Exceptions
 import { UsersOnlineService } from './users-online.service';
 import { AllWsExceptionsFilter } from './all-ws.exception.filter';
-
 // Entities
-import { User } from '../users/entities/user.entity';
+import { User, UserStatus } from '../users/entities/user.entity';
+// DTO
+import { UserStatusChangeDto } from './dto/user-status-change.dto';
+
+export enum Events {
+  usersOnline = 'users-online',
+  usersList = 'users-list',
+  usersListUpdate = 'users-list-update',
+  messages = 'messages',
+  userStatusChange = 'user-status-change',
+  exception = 'exception',
+}
 
 @WebSocketGateway()
+@UsePipes(new ValidationPipe())
 @UseFilters(AllWsExceptionsFilter)
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
@@ -44,18 +53,18 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const user = await this.authUser(socket);
       const messages = await this.messagesService.getList();
 
-      this.usersOnlineService.add(socket.id, user);
+      this.usersOnlineService.add(user, socket);
 
-      this.server.emit('users-online', this.usersOnlineService.toArray());
-      socket.emit('messages', messages);
+      this.server.emit(Events.usersOnline, this.usersOnlineService.toArray());
+      socket.emit(Events.messages, messages);
 
       if (user.isAdmin) {
         const users = await this.userService.findAll();
 
-        socket.emit('users-list', users);
+        socket.emit(Events.usersList, users);
       }
     } catch (exception) {
-      socket.emit('exception', {
+      socket.emit(Events.exception, {
         type: exception.name,
         message: exception.message,
       });
@@ -63,9 +72,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(socket: Socket) {
-    this.usersOnlineService.delete(socket.id);
+    this.usersOnlineService.delete(socket);
 
-    socket.emit('users-online', this.usersOnlineService.toArray());
+    socket.emit(Events.usersOnline, this.usersOnlineService.toArray());
   }
 
   @UseGuards(AuthJwtWsGuard, new MessagesGuard())
@@ -78,7 +87,27 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const message = await this.messagesService.create(data as string, user);
 
-    socket.broadcast.emit('messages', [message]);
+    socket.broadcast.emit(Events.messages, [message]);
+  }
+
+  @UseGuards(AuthJwtWsGuard, AdminGuard)
+  @SubscribeMessage(Events.userStatusChange)
+  async handleUserStatusChange(
+    @MessageBody() data: UserStatusChangeDto,
+    @ConnectedSocket() socket: Socket,
+  ): Promise<void> {
+    const user = await this.userService.updateStatus(data.id, data.status);
+    const { socket: userSocket } = this.usersOnlineService.get(user.id) || {};
+
+    if (data.status === UserStatus.banned && userSocket) {
+        userSocket.disconnect(true);
+    } else {
+      this.usersOnlineService.update(user);
+
+      this.server.emit(Events.usersOnline, this.usersOnlineService.toArray());
+    }
+
+    socket.emit(Events.usersListUpdate, user);
   }
 
   async authUser(socket: Socket): Promise<User> {
