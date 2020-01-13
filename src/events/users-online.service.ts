@@ -25,13 +25,14 @@ export class UsersOnlineService {
     return this;
   }
 
-  update(user: User, socket?: Socket): UsersOnlineService {
+  update(user: User, socket?: Socket, lastMessageTime?: Date): UsersOnlineService {
     this.users = this.users.map((userOnline) => {
       if (userOnline.user.id === user.id) {
         return {
           ...userOnline,
           user,
-          ...(socket ? { socket } : {}),
+          ...(socket && { socket }),
+          ...(lastMessageTime && { lastMessageTime }),
         };
       }
 

@@ -36,7 +36,7 @@
         const handleClick = () => {
           const message = prompt('message', '');
 
-          socket.emit('messages', message);
+          socket.emit('messages', { text: message });
         }
 
         const handleBan = () => {

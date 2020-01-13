@@ -9,7 +9,7 @@ export class AdminGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const client = context.switchToWs().getClient();
 
-    const user = client.handshake.query.user;
+    const user = client.handshake.query.user || {};
 
     if (!user.isAdmin) {
       throw new ForbiddenException('This action allowed only for an admin users.');

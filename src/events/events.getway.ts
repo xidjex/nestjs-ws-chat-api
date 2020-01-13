@@ -24,9 +24,11 @@ import { AllWsExceptionsFilter } from './all-ws.exception.filter';
 import { User, UserStatus } from '../users/entities/user.entity';
 // DTO
 import { UserStatusChangeDto } from './dto/user-status-change.dto';
+import { MessageDto } from './dto/message.dto';
 
 export enum Events {
   usersOnline = 'users-online',
+  usersOnlineUpdate = 'users-online-update',
   usersList = 'users-list',
   usersListUpdate = 'users-list-update',
   messages = 'messages',
@@ -77,17 +79,19 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket.emit(Events.usersOnline, this.usersOnlineService.toArray());
   }
 
-  @UseGuards(AuthJwtWsGuard, new MessagesGuard())
+  @UseGuards(AuthJwtWsGuard, MessagesGuard)
   @SubscribeMessage('messages')
   async handleEvent(
-    @MessageBody() data: unknown,
+    @MessageBody() message: MessageDto,
     @ConnectedSocket() socket: Socket,
   ): Promise<void> {
-    const{ user } = socket.handshake.query;
+    const { user } = socket.handshake.query;
 
-    const message = await this.messagesService.create(data as string, user);
+    const newMessage = await this.messagesService.create(message.text, user);
 
-    socket.broadcast.emit(Events.messages, [message]);
+    this.usersOnlineService.update(user, null, new Date());
+
+    socket.broadcast.emit(Events.messages, [newMessage]);
   }
 
   @UseGuards(AuthJwtWsGuard, AdminGuard)
@@ -104,7 +108,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } else {
       this.usersOnlineService.update(user);
 
-      this.server.emit(Events.usersOnline, this.usersOnlineService.toArray());
+      this.server.emit(Events.usersOnlineUpdate, [user]);
     }
 
     socket.emit(Events.usersListUpdate, user);
