@@ -17,7 +17,7 @@ export class Message extends BaseEntity {
   @Column()
   text: string;
 
-  @Column({ type: 'datetime' })
+  @Column()
   date: string;
 
   @ManyToOne(() => User, user => user.messages)
