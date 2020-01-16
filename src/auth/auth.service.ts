@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 // Services
 import { UsersService } from '../users/users.service';
@@ -15,8 +16,10 @@ import { UserRegisterDto } from '../users/dto/user.register.dto';
 // Types
 import { AccessTokenType } from './types/access-token.type';
 import { TokenPayloadType } from './types/token-payload.type';
-import { InvalidTokenException } from './exceptions/invalid-token.exception';
-import { UserBannedException } from './exceptions/user-banned.exception';
+
+// Exceptions
+import { InvalidTokenException } from '../common/exceptions/invalid-token.exception';
+import { UserBannedException } from '../common/exceptions/user-banned.exception';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +27,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly passwordService: PasswordService,
+    private readonly configService: ConfigService,
   ) {}
 
   async login(userDto: UserLoginDto): Promise<AccessTokenType> {
@@ -43,8 +47,10 @@ export class AuthService {
 
     const { password: pass, ...payload } = user;
 
+    const expiresIn = this.configService.get<string>('accessTokenLifetime');
+
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload, { expiresIn }),
     };
   }
 
