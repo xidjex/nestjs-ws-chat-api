@@ -85,8 +85,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @UseGuards(AuthJwtWsGuard, MessagesGuard)
-  @SubscribeMessage('messages')
-  async handleEvent(
+  @SubscribeMessage(Events.messages)
+  async handleMessage(
     @MessageBody() message: MessageDto,
     @ConnectedSocket() socket: Socket,
   ): Promise<void> {

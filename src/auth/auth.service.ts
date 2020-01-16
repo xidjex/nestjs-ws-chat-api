@@ -54,16 +54,27 @@ export class AuthService {
     };
   }
 
-  async register(userDto: UserRegisterDto): Promise<User> {
+  async register(userDto: UserRegisterDto): Promise<{ user: User, accessToken: string }> {
     const { email, name, password } = userDto;
 
     const hashedPassword = await this.passwordService.hash(password);
 
-    return this.usersService.create({
+    const expiresIn = this.configService.get<string>('accessTokenLifetime');
+
+    const user = await this.usersService.create({
       email,
       name,
       password: hashedPassword,
     });
+
+    delete user.password;
+
+    const { ...payload } = user;
+
+    return {
+      user,
+      accessToken: this.jwtService.sign(payload, { expiresIn }),
+    };
   }
 
   async validateUser(id: number): Promise<User | null> {

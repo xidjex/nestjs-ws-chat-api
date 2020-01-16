@@ -30,7 +30,7 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() user: UserRegisterDto): Promise<User> {
+  register(@Body() user: UserRegisterDto): Promise<{ user: User, accessToken: string }> {
     return this.authService.register(user);
   }
 }
