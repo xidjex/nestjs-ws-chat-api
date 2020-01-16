@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 
+// Entities
 import { User, UserStatus } from './entities/user.entity';
 
 // Exceptions

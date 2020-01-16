@@ -2,10 +2,10 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 
 // Services
 import { AuthService } from './auth.service';
+import { UsersOnlineService } from '../events/users-online.service';
 
 // Entities
 import { User } from '../users/entities/user.entity';
-import { UsersOnlineService } from '../events/users-online.service';
 
 @Injectable()
 export class AuthJwtWsGuard implements CanActivate {
