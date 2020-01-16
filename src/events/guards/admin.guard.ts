@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { ForbiddenException } from '../../auth/exceptions/forbidden.exception';
+import { ForbiddenException } from '../../common/exceptions/forbidden.exception';
 
 @Injectable()
 export class AdminGuard implements CanActivate {

@@ -5,10 +5,14 @@ import { AuthService } from './auth.service';
 
 // Entities
 import { User } from '../users/entities/user.entity';
+import { UsersOnlineService } from '../events/users-online.service';
 
 @Injectable()
 export class AuthJwtWsGuard implements CanActivate {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersOnlineService: UsersOnlineService,
+  ) {}
 
   // Attach user data to connection
   attachUser(context: ExecutionContext, user: User): void {
@@ -23,7 +27,7 @@ export class AuthJwtWsGuard implements CanActivate {
 
     const tokenPayload = await this.authService.verifyToken(token);
 
-    const user = await this.authService.validateUser(tokenPayload.id);
+    const { user } = this.usersOnlineService.get(tokenPayload.id);
 
     this.attachUser(context, user);
 
