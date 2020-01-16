@@ -47,9 +47,9 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  create(user: UserRegisterDto): Promise<User> {
+  async create(user: UserRegisterDto): Promise<User> {
     try {
-      return this.userRepository.create(user).save();
+      return await this.userRepository.create(user).save();
     } catch (exception) {
       if (exception instanceof QueryFailedError) {
         throw new UserAlreadyExistException('User with provided email or name already exist');
