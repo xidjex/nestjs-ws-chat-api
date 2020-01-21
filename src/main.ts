@@ -6,12 +6,12 @@ import { EntityNotFoundExceptionFilter } from './exception-filters/entity-not-fo
 import { UserAlreadyExistExceptionFilter } from './exception-filters/user-already-exist-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(
     new EntityNotFoundExceptionFilter(),
     new UserAlreadyExistExceptionFilter(),
   );
-  await app.listen(3000);
+  await app.listen(4000);
 }
 bootstrap();

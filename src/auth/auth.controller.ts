@@ -3,7 +3,7 @@ import {
   Body,
   Post,
   UseInterceptors,
-  ClassSerializerInterceptor,
+  ClassSerializerInterceptor, UseGuards,
 } from '@nestjs/common';
 
 // Services
@@ -19,6 +19,9 @@ import { User } from 'src/users/entities/user.entity';
 // Types
 import { AccessTokenType } from './types/access-token.type';
 
+// Guards
+import { AuthGuard } from '@nestjs/passport';
+
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
@@ -33,4 +36,8 @@ export class AuthController {
   register(@Body() user: UserRegisterDto): Promise<{ user: User, accessToken: string }> {
     return this.authService.register(user);
   }
+
+  @UseGuards(AuthGuard())
+  @Post('/check_token')
+  checkToken(): boolean { return true; }
 }
