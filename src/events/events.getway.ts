@@ -7,8 +7,13 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import {
+  UseFilters,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { UseFilters, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 
 // Guards
 import { AuthJwtWsGuard } from 'src/auth/auth.jwt-ws.guard';
