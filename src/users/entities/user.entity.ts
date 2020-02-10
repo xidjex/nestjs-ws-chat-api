@@ -36,6 +36,9 @@ export class User extends BaseEntity {
   })
   status: UserStatus;
 
+  @Column({ select: false, default: null })
+  refreshToken: string;
+
   @OneToMany(() => Message, message => message.user)
   messages: Message[];
 }

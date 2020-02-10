@@ -40,6 +40,12 @@ export class UsersService {
     return this.userRepository.findOneOrFail(id);
   }
 
+  findByRefreshToken(refreshToken: string): Promise<User> {
+    return this.userRepository.findOneOrFail({
+      where: { refreshToken },
+    });
+  }
+
   async updateStatus(id: number, status: UserStatus): Promise<User> {
     const user = await this.userRepository.findOneOrFail(id);
 
