@@ -21,6 +21,7 @@ import { User } from 'src/users/entities/user.entity';
 
 // Types
 import { SuccessAuthResponseType } from './types/success-auth-response.type';
+import { SuccessCheckTokenResponseType } from './types/success-check-token-response.type';
 
 // Guards
 import { AuthGuard } from '@nestjs/passport';
@@ -42,7 +43,11 @@ export class AuthController {
 
   @UseGuards(AuthGuard())
   @Post('/check_token')
-  checkToken(): boolean { return; }
+  checkToken(@Request() request): SuccessCheckTokenResponseType {
+    const { user } = request;
+
+    return { user };
+  }
 
   @Post('/refresh_token')
   refreshToken(@Body() refreshTokenData: RefreshTokenDto): Promise<SuccessAuthResponseType> {
