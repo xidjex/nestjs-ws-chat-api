@@ -12,7 +12,13 @@ export class UsersOnlineService {
   private users: UserOnline[] = [];
 
   add(user: User, socket: Socket): UsersOnlineService {
-    this.users.push({ socket, user });
+    const isExists = this.users.some(({ user: userConnected, socket: socketConnected }) => {
+      return user.id === userConnected.id || socket.id === socketConnected.id;
+    });
+
+    if (!isExists) {
+      this.users.push({ socket, user });
+    }
 
     return this;
   }
@@ -20,7 +26,7 @@ export class UsersOnlineService {
   delete(target: User | Socket): UsersOnlineService {
     const key = target instanceof User ? 'user' : 'socket';
 
-    this.users.filter(({ [key]: { id } }) => id !== target.id);
+    this.users = this.users.filter(({ [key]: { id } }) => id !== target.id);
 
     return this;
   }
