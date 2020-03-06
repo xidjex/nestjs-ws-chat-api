@@ -37,8 +37,6 @@ import { UserStatusChangeDto } from './dto/user-status-change.dto';
 import { MessageDto } from './dto/message.dto';
 
 export enum Events {
-  usersOnline = 'users-online',
-  usersOnlineUpdate = 'users-online-update',
   usersList = 'users-list',
   usersListUpdate = 'users-list-update',
   messages = 'messages',
@@ -62,19 +60,29 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(socket: Socket): Promise<void> {
     try {
-      const user = await this.authUser(socket);
+      const currentUser = await this.authUser(socket);
       const messages = await this.messagesService.getList();
 
-      this.usersOnlineService.add(user, socket);
+      this.usersOnlineService.add(currentUser, socket);
 
-      this.server.emit(Events.usersOnline, this.usersOnlineService.toArray());
       socket.emit(Events.messages, messages);
 
-      if (user.isAdmin) {
-        const users = await this.userService.findAll();
+      const usersOnline = this.usersOnlineService.toArray();
 
-        socket.emit(Events.usersList, users);
+      if (currentUser.isAdmin) {
+        const users = await this.userService.findAll();
+        const usersOnlineId = usersOnline.map(({ id }) => id);
+
+        const usersWithOnlineFlag = users.map((user) => ({
+            ...user,
+            isOnline: usersOnlineId.includes(user.id),
+        }));
+
+        socket.emit(Events.usersList, usersWithOnlineFlag);
+        return ;
       }
+
+      this.server.emit(Events.usersList, usersOnline);
     } catch (exception) {
       socket.emit(Events.exception, {
         type: exception.name,
@@ -86,7 +94,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleDisconnect(socket: Socket) {
     this.usersOnlineService.delete(socket);
 
-    socket.emit(Events.usersOnline, this.usersOnlineService.toArray());
+    socket.emit(Events.usersList, this.usersOnlineService.toArray());
   }
 
   @UseGuards(AuthJwtWsGuard, MessagesGuard)
@@ -118,10 +126,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } else {
       this.usersOnlineService.update(user);
 
-      this.server.emit(Events.usersOnlineUpdate, [user]);
+      this.server.emit(Events.usersListUpdate, user);
     }
-
-    socket.emit(Events.usersListUpdate, user);
   }
 
   async authUser(socket: Socket): Promise<User> {
